@@ -25,11 +25,11 @@ if is_torch_npu_available():
     import torch_npu
 
 ACTIVATION_FUNCTIONS = {
-    "swish": nn.SiLU(),
-    "silu": nn.SiLU(),
-    "mish": nn.Mish(),
-    "gelu": nn.GELU(),
-    "relu": nn.ReLU(),
+    "swish": F.mish,
+    "silu": F.mish,
+    "mish": F.mish,
+    "gelu": F.gelu,
+    "relu": F.relu,
 }
 
 
