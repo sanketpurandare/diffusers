@@ -85,22 +85,23 @@ class FlowMatchEulerDiscreteScheduler(SchedulerMixin, ConfigMixin):
             raise ValueError(
                 "Only one of `config.use_beta_sigmas`, `config.use_exponential_sigmas`, `config.use_karras_sigmas` can be used."
             )
-        timesteps = np.linspace(1, num_train_timesteps, num_train_timesteps, dtype=np.float32)[::-1].copy()
-        timesteps = torch.from_numpy(timesteps).to(dtype=torch.float32)
-
+        # Generate timesteps using numpy only.
+        timesteps = np.linspace(1, num_train_timesteps, num_train_timesteps, dtype=np.float32)[::-1].copy()     
+        # Create sigmas
         sigmas = timesteps / num_train_timesteps
         if not use_dynamic_shifting:
             # when use_dynamic_shifting is True, we apply the timestep shifting on the fly based on the image resolution
             sigmas = shift * sigmas / (1 + (shift - 1) * sigmas)
 
+        # Store timesteps as scaled sigmas
         self.timesteps = sigmas * num_train_timesteps
 
         self._step_index = None
         self._begin_index = None
 
-        self.sigmas = sigmas.to("cpu")  # to avoid too much CPU/GPU communication
-        self.sigma_min = self.sigmas[-1].item()
-        self.sigma_max = self.sigmas[0].item()
+        self.sigmas = sigmas  # Using numpy array directly (no CPU/GPU transfers necessary)
+        self.sigma_min = float(self.sigmas[-1])
+        self.sigma_max = float(self.sigmas[0])
 
     @property
     def step_index(self):
